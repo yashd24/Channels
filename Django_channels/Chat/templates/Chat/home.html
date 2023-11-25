@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+
+    <h1>Chatting Chatting</h1>
+    <form id="form" name="messageInput">
+      <input type="text" />
+      <input type="submit" value="Submit" />
+    </form>
+
+
+    <div id="message"></div>
+
+
+    <script>
+      const socket = new WebSocket("ws://127.0.0.1:8000/ws/socket/");
+
+      socket.onopen = function () {
+        console.log("Connected...");
+      };
+
+      socket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        console.log("message recieved...", data);
+
+        if (data.type === "chat") {
+          let messages = document.getElementById("message");
+          messages.insertAdjacentHTML(
+            "beforeend",
+            `<div>
+              <p>${data.message}</p>
+                </div>`
+          );
+
+        }
+      };
+
+      const form = document.getElementById("form");
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const messageInput = document.querySelector("input[type='text']");
+        const message = messageInput.value;
+
+        //send message to the server
+        socket.send(
+          JSON.stringify({
+            'type': "chat",
+            'message': message,
+          })
+        );
+        messageInput.value = "";
+      });
+    </script>
+  </body>
+</html>
